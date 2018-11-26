@@ -5,7 +5,8 @@ const weekday = [ "sunday","monday","tuesday","wednesday","thursday","friday","s
 
 // Make an object hash to reference either weekly day numbers or fortnightly.
 const cycles = { "weekly": 7,
-            "fortnightly": 14
+            "fortnightly": 14,
+            "monthly": 365/12
             }
 
 
@@ -37,7 +38,8 @@ function firstCycleDays (start, weekdayStart) {
 
 // Output to your web page in this function however you would like.
 function printBillingCycle(a, b, c, d) {
-    $('#result').append('| ' + a + ' | ' + b + ' | ' + c + ' | ' + d + '|' + '<br>');
+    // $('#result').append('| ' + a + ' | ' + b + ' | ' + c + ' | ' + d + '|' + '<br>');
+    $('#result tbody').append(`<tr><td>${a}</td><td>${b}</td><td>${c}</td><td>${d}</td></tr>`);
 }
 
 function processRent(res) {
@@ -48,7 +50,7 @@ function processRent(res) {
     let cycle=res.frequency;
     let rent=res.rent;
 
-    printBillingCycle('Start Date', 'End Date', 'dates', 'Due money');
+    // printBillingCycle('Start Date', 'End Date', 'dates', 'Due money');
 
     // FIRST CYCLE
     let cycleStart = new Date(start);
@@ -99,6 +101,7 @@ $(document).ready(function() {
             }
     
         });
+
     });
     
 });
