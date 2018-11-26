@@ -1,7 +1,5 @@
-// console.log('working');
-
 // Make an array to mirror Date.getDay.
-const weekday = [ "sunday","monday","tuesday","wednesday","thursday","friday","saturday" ];
+const weekday = [ "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" ];
 
 // Make an object hash to reference either weekly day numbers or fortnightly.
 const cycles = { "weekly": 7,
@@ -9,11 +7,9 @@ const cycles = { "weekly": 7,
             "monthly": 365/12 
             }
 
-
 function drawTableHeader() {
     $('#result tbody').append('<tr><th>From</th><th>To</th><th>Days</th><th>Amount</th></tr>');
 }
-
 
 // Add a defined number of days to a date.
 function addDays (mydate, days) {
@@ -72,10 +68,8 @@ function ordinal_suffix_of(i) {
     return i + "th";
 }
 
-
 // Function to display date in a nicer format
 // August, 9th 2019
-
 function convertDate(rentDate) {
     const monthNames = [ "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December" ];
@@ -86,8 +80,6 @@ function convertDate(rentDate) {
 
     return `${myMonth}, ${myDay} ${myYear}`;
 }
-
-
 
 function processRent(res) {
     try {
@@ -103,7 +95,7 @@ function processRent(res) {
         // FIRST CYCLE
         let cycleStart = new Date(start);
         let days = firstCycleDays(start, duedate);
-        let cycleEnd = addDays(cycleStart, days - 1);
+        let cycleEnd = addDays(cycleStart, days - 1); // To account for the first day
         let duemoney = rent/cycles[cycle]*days;
 
         printBillingCycle(convertDate(cycleStart), convertDate(cycleEnd), convertDays(days), convertMoney(duemoney));
@@ -112,7 +104,7 @@ function processRent(res) {
         // SUBSEQUENT CYCLES
         // If I add another billing cycle, will it be less than the end date.
         while ( addDays(cycleEnd, days) <= new Date(end) ) {
-            cycleStart = addDays(cycleEnd, 1);
+            cycleStart = addDays(cycleEnd, 1); // Day after last cycle
             days = cycles[cycle];
             cycleEnd = addDays(cycleStart, days - 1);
             duemoney = rent/cycles[cycle]*days;
@@ -121,7 +113,7 @@ function processRent(res) {
         }
 
         // LAST CYCLE
-        cycleStart = addDays(cycleEnd, 1);;
+        cycleStart = addDays(cycleEnd, 1); // Day after last cycle
         days = (new Date(end) - cycleEnd)/86400000;
         cycleEnd = new Date(end);
         duemoney = rent/cycles[cycle]*days;
@@ -131,9 +123,7 @@ function processRent(res) {
     } catch {
         $('#result tbody').append("Your Request could not be processed");
     }
-
 }
-
 
 $(document).ready(function() {
     $('#mySearch').click(function(){
@@ -158,8 +148,6 @@ $(document).ready(function() {
                 $('#result tbody').empty();
                 $('#result tbody').append("Your request was unable to be processed");
             } 
-
-    
         });
 
     });
