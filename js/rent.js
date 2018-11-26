@@ -6,7 +6,7 @@ const weekday = [ "sunday","monday","tuesday","wednesday","thursday","friday","s
 // Make an object hash to reference either weekly day numbers or fortnightly.
 const cycles = { "weekly": 7,
             "fortnightly": 14,
-            "monthly": 365/12
+            "monthly": 365/12 
             }
 
 
@@ -24,11 +24,11 @@ function addDays (mydate, days) {
 }
 
 // Generate how many days in the first cycle.
-function firstCycleDays (start, weekdayStart) {
-    var clientDate=new Date(start);
+function firstCycleDays (start, duedate) {
+    var clientDate = new Date(start);
 
     // Get the date numbers of each weekday.
-    var duedateNum = weekday.indexOf(weekdayStart);
+    var duedateNum = weekday.indexOf(duedate); 
     var startdateNum = clientDate.getDay();
 
     // Compare the difference
@@ -90,42 +90,47 @@ function convertDate(rentDate) {
 
 
 function processRent(res) {
-    // API DATA
-    let start = res.start_date;
-    let end = res.end_date;
-    let duedate = res.payment_day;
-    let cycle = res.frequency;
-    let rent = res.rent;
+    try {
+        // API DATA
+        let start = res.start_date;
+        let end = res.end_date;
+        let duedate = res.payment_day;
+        let cycle = res.frequency;
+        let rent = res.rent;
 
-    // printBillingCycle('Start Date', 'End Date', 'dates', 'Due money');
+        // printBillingCycle('Start Date', 'End Date', 'dates', 'Due money');
 
-    // FIRST CYCLE
-    let cycleStart = new Date(start);
-    let days = firstCycleDays(start, duedate);
-    let cycleEnd = addDays(cycleStart, days);
-    let duemoney = rent/cycles[cycle]*days;
-
-    printBillingCycle(convertDate(cycleStart), convertDate(cycleEnd), convertDays(days), convertMoney(duemoney));
-
-
-    // SUBSEQUENT CYCLES
-    // If I add another billing cycle, will it be less than the end date.
-    while ( addDays(cycleEnd, days) < new Date(end) ) {
-        cycleStart = cycleEnd;
-        days = cycles[cycle];
-        cycleEnd = addDays(cycleStart, days);
-        duemoney = rent/cycles[cycle]*days;
+        // FIRST CYCLE
+        let cycleStart = new Date(start);
+        let days = firstCycleDays(start, duedate);
+        let cycleEnd = addDays(cycleStart, days - 1);
+        let duemoney = rent/cycles[cycle]*days;
 
         printBillingCycle(convertDate(cycleStart), convertDate(cycleEnd), convertDays(days), convertMoney(duemoney));
+
+
+        // SUBSEQUENT CYCLES
+        // If I add another billing cycle, will it be less than the end date.
+        while ( addDays(cycleEnd, days) <= new Date(end) ) {
+            cycleStart = addDays(cycleEnd, 1);
+            days = cycles[cycle];
+            cycleEnd = addDays(cycleStart, days - 1);
+            duemoney = rent/cycles[cycle]*days;
+
+            printBillingCycle(convertDate(cycleStart), convertDate(cycleEnd), convertDays(days), convertMoney(duemoney));
+        }
+
+        // LAST CYCLE
+        cycleStart = addDays(cycleEnd, 1);;
+        days = (new Date(end) - cycleEnd)/86400000;
+        cycleEnd = new Date(end);
+        duemoney = rent/cycles[cycle]*days;
+        if ( days != 0 ) {
+            printBillingCycle(convertDate(cycleStart), convertDate(cycleEnd), convertDays(days), convertMoney(duemoney));
+        }
+    } catch {
+        $('#result tbody').append("Your Request could not be processed");
     }
-
-    // LAST CYCLE
-    cycleStart = cycleEnd;
-    days = (new Date(end) - cycleEnd)/86400000;
-    cycleEnd = new Date(end);
-    duemoney = rent/cycles[cycle]*days;
-
-    printBillingCycle(convertDate(cycleStart), convertDate(cycleEnd), convertDays(days), convertMoney(duemoney));
 
 }
 
@@ -144,10 +149,16 @@ $(document).ready(function() {
                 // Test Result is there
                 // $('#result').html(JSON.stringify(res));
                 // Process Rent
+                console.log(res);
                 $('#result tbody').empty();
                 drawTableHeader();
                 processRent(res);
-            }
+            },
+            error: function() { 
+                $('#result tbody').empty();
+                $('#result tbody').append("Your request was unable to be processed");
+            } 
+
     
         });
 
