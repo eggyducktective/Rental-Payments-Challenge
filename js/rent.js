@@ -10,6 +10,11 @@ const cycles = { "weekly": 7,
             }
 
 
+function drawTableHeader() {
+    $('#result tbody').append('<tr><th>From</th><th>To</th><th>Days</th><th>Amount</th></tr>');
+}
+
+
 // Add a defined number of days to a date.
 function addDays (mydate, days) {
     var value = mydate.valueOf();
@@ -23,8 +28,8 @@ function firstCycleDays (start, weekdayStart) {
     var clientDate=new Date(start);
 
     // Get the date numbers of each weekday.
-    var duedateNum=weekday.indexOf(weekdayStart);
-    var startdateNum=clientDate.getDay();
+    var duedateNum = weekday.indexOf(weekdayStart);
+    var startdateNum = clientDate.getDay();
 
     // Compare the difference
     var days = duedateNum - startdateNum;
@@ -38,17 +43,59 @@ function firstCycleDays (start, weekdayStart) {
 
 // Output to your web page in this function however you would like.
 function printBillingCycle(a, b, c, d) {
-    // $('#result').append('| ' + a + ' | ' + b + ' | ' + c + ' | ' + d + '|' + '<br>');
     $('#result tbody').append(`<tr><td>${a}</td><td>${b}</td><td>${c}</td><td>${d}</td></tr>`);
 }
 
+// Function to display proper money value with $ sign & 2 decimal places.
+function convertMoney(amount) {
+    return `$${amount.toFixed(2).toString()}`;
+}
+
+// Function to display days in rounded format for Monthly payment
+function convertDays(days) {
+    return parseInt(days);
+}
+
+// Function to display the suffix of the date 
+function ordinal_suffix_of(i) {
+    var j = i % 10,
+        k = i % 100;
+    if (j == 1 && k != 11) {
+        return i + "st";
+    }
+    if (j == 2 && k != 12) {
+        return i + "nd";
+    }
+    if (j == 3 && k != 13) {
+        return i + "rd";
+    }
+    return i + "th";
+}
+
+
+// Function to display date in a nicer format
+// August, 9th 2019
+
+function convertDate(rentDate) {
+    const monthNames = [ "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December" ];
+
+    const myMonth = monthNames[rentDate.getMonth()];
+    const myDay = ordinal_suffix_of(rentDate.getDate());
+    const myYear = rentDate.getFullYear();
+
+    return `${myMonth}, ${myDay} ${myYear}`;
+}
+
+
+
 function processRent(res) {
     // API DATA
-    let start=res.start_date;
-    let end=res.end_date;
-    let duedate=res.payment_day;
-    let cycle=res.frequency;
-    let rent=res.rent;
+    let start = res.start_date;
+    let end = res.end_date;
+    let duedate = res.payment_day;
+    let cycle = res.frequency;
+    let rent = res.rent;
 
     // printBillingCycle('Start Date', 'End Date', 'dates', 'Due money');
 
@@ -58,7 +105,7 @@ function processRent(res) {
     let cycleEnd = addDays(cycleStart, days);
     let duemoney = rent/cycles[cycle]*days;
 
-    printBillingCycle(cycleStart, cycleEnd, days, duemoney);
+    printBillingCycle(convertDate(cycleStart), convertDate(cycleEnd), convertDays(days), convertMoney(duemoney));
 
 
     // SUBSEQUENT CYCLES
@@ -69,7 +116,7 @@ function processRent(res) {
         cycleEnd = addDays(cycleStart, days);
         duemoney = rent/cycles[cycle]*days;
 
-        printBillingCycle(cycleStart, cycleEnd, days, duemoney);
+        printBillingCycle(convertDate(cycleStart), convertDate(cycleEnd), convertDays(days), convertMoney(duemoney));
     }
 
     // LAST CYCLE
@@ -78,7 +125,7 @@ function processRent(res) {
     cycleEnd = new Date(end);
     duemoney = rent/cycles[cycle]*days;
 
-    printBillingCycle(cycleStart, cycleEnd, days, duemoney);
+    printBillingCycle(convertDate(cycleStart), convertDate(cycleEnd), convertDays(days), convertMoney(duemoney));
 
 }
 
@@ -97,6 +144,8 @@ $(document).ready(function() {
                 // Test Result is there
                 // $('#result').html(JSON.stringify(res));
                 // Process Rent
+                $('#result tbody').empty();
+                drawTableHeader();
                 processRent(res);
             }
     
